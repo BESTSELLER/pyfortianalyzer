@@ -1,0 +1,11 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: pyfortianalyzer
+  description: Python API client library for Fortinet's ForitAnalyzer.
+  annotations:
+    github.com/project-slug: BESTSELLER/pyfortianalyzer
+spec:
+  type: service
+  lifecycle: experimental
+  owner: network
