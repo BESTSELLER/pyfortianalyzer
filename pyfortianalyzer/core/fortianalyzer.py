@@ -7,11 +7,9 @@ class FortiAnalyzer(object):
     """API class for FortiAnalyzer login management and post requests.
     """
 
-    def __init__(self, api):
+    def __init__(self, api, **kwargs):
         self.api = api
         self.base_url = f"{self.api.host}/jsonrpc"
-        self.session = None
-        self.sessionid = None
         self.max_retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
         atexit.register(self.logout)
 
@@ -23,8 +21,8 @@ class FortiAnalyzer(object):
         """
 
         # Only log in, if we don't have a session stored in memory.
-        if self.session is None or self.sessionid is None:
-            self.session = requests.session()
+        if self.api.session is None or self.api.sessionid is None:
+            self.api.session = requests.session()
 
             data = {
                 "method": "exec",
@@ -37,18 +35,18 @@ class FortiAnalyzer(object):
                         "url": "/sys/login/user"
                     }
                 ],
-                "session": self.sessionid
+                "session": self.api.sessionid
             }
 
-            self.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
-            response = self.session.post(url=self.base_url, json=data, verify=self.api.verify)
+            self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
+            response = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
 
             # HTTP 200 OK
             if response.status_code == 200:
 
                 # Check if the FortiAnalyzer request is successful
                 if response.json()['result'][0]['status']['code'] == 0:
-                    self.sessionid = response.json()['session']
+                    self.api.sessionid = response.json()['session']
 
                 return response.json()
 
@@ -60,7 +58,7 @@ class FortiAnalyzer(object):
         """
 
         # Only log out, if we have a session stored in-memory.
-        if self.session:
+        if self.api.session:
             data = {
                 "method": "exec",
                 "params": [
@@ -68,23 +66,23 @@ class FortiAnalyzer(object):
                         "url": "/sys/logout"
                     }
                 ],
-                "session": self.sessionid
+                "session": self.api.sessionid
             }
 
-            self.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
-            response = self.session.post(url=self.base_url, json=data, verify=self.api.verify)
+            self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
+            response = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
 
             # HTTP 200 OK
             if response.status_code == 200:
-                self.session = None
-                self.sessionid = None
+                self.api.session = None
+                self.api.sessionid = None
 
     def login_check(self):
         """Checks if we have a valid login session.
         """
 
         # Check if we have a session in-memory
-        if self.session:
+        if self.api.session:
 
             # Use the sys_status endpoint as a test to see if our session is valid
             data = {
@@ -94,18 +92,17 @@ class FortiAnalyzer(object):
                         "url": "/sys/status"
                     }
                 ],
-                "session": self.sessionid
+                "session": self.api.sessionid
             }
 
-            self.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
-            sys_status = self.session.post(url=self.base_url, json=data, verify=self.api.verify)
+            self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
+            sys_status = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
 
             # HTTP 200 OK
             if sys_status.status_code == 200:
 
-                # If the FortiAnalyzer request is unsuccessful, then we log out and log in again.
+                # If the FortiAnalyzer request is unsuccessful, then we log in again.
                 if sys_status.json()['result'][0]['status']['code'] != 0:
-                    self.logout()
                     self.login()
 
         # Otherwise, log in again.
@@ -128,11 +125,11 @@ class FortiAnalyzer(object):
         data = {
             "method": method,
             "params": [params],
-            "session": self.sessionid
+            "session": self.api.sessionid
         }
 
-        self.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
-        response = self.session.post(url=self.base_url, json=data, verify=self.api.verify)
+        self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
+        response = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
 
         # HTTP 200 OK
         if response.status_code == 200:

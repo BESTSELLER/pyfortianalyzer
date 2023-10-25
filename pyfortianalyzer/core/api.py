@@ -13,6 +13,8 @@ class Api(object):
         self.password = password
         self.adom = adom
         self.verify = verify
+        self.session = None
+        self.sessionid = None
 
     @property
     def adoms(self):
