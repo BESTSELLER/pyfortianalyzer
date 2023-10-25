@@ -1,5 +1,6 @@
 # pyfortianalyzer
 Python API client library for Fortinet's [FortiAnalyzer](https://www.fortinet.com/products/management/fortianalyzer).
+
 It does not provide all endpoints or functionality available. We encourage to make a pull request with needed missing endpoints.
 
 > **Note:** This library has been built and tested for FortiAnalyzer v7.0.x.
