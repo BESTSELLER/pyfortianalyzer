@@ -20,35 +20,34 @@ class FortiAnalyzer(object):
             dict: JSON data.
         """
 
-        # Only log in, if we don't have a session stored in memory.
-        if self.api.session is None or self.api.sessionid is None:
-            self.api.session = requests.session()
+        # Create a new session
+        self.api.session = requests.session()
 
-            data = {
-                "method": "exec",
-                "params": [
-                    {
-                        "data": {
-                            "passwd": self.api.password,
-                            "user": self.api.username
-                        },
-                        "url": "/sys/login/user"
-                    }
-                ],
-                "session": self.api.sessionid
-            }
+        data = {
+            "method": "exec",
+            "params": [
+                {
+                    "data": {
+                        "passwd": self.api.password,
+                        "user": self.api.username
+                    },
+                    "url": "/sys/login/user"
+                }
+            ],
+            "session": self.api.sessionid
+        }
 
-            self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
-            response = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
+        self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
+        response = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
 
-            # HTTP 200 OK
-            if response.status_code == 200:
+        # HTTP 200 OK
+        if response.status_code == 200:
 
-                # Check if the FortiAnalyzer request is successful
-                if response.json()['result'][0]['status']['code'] == 0:
-                    self.api.sessionid = response.json()['session']
+            # Check if the FortiAnalyzer request is successful
+            if response.json()['result'][0]['status']['code'] == 0:
+                self.api.sessionid = response.json()['session']
 
-                return response.json()
+            return response.json()
 
     def logout(self):
         """Logs out of the FortiAnalyzer API.
@@ -57,7 +56,7 @@ class FortiAnalyzer(object):
             dict: JSON data.
         """
 
-        # Only log out, if we have a session stored in-memory.
+        # Only try the log out endpoint, if we have a session.
         if self.api.session:
             data = {
                 "method": "exec",
@@ -71,20 +70,23 @@ class FortiAnalyzer(object):
 
             self.api.session.mount("http://", HTTPAdapter(max_retries=self.max_retries))
             response = self.api.session.post(url=self.base_url, json=data, verify=self.api.verify)
-
+            
             # HTTP 200 OK
             if response.status_code == 200:
-                self.api.session = None
-                self.api.sessionid = None
+                return response.json()
+
+        # Clear our session variables
+        self.api.session = None
+        self.api.sessionid = None
 
     def login_check(self):
         """Checks if we have a valid login session.
         """
 
-        # Check if we have a session in-memory
+        # Check if we have a session
         if self.api.session:
-
-            # Use the sys_status endpoint as a test to see if our session is valid
+          
+            # Use the sys_status endpoint as a test to see if our session is valid in FortiAnalyzer
             data = {
                 "method": "get",
                 "params": [
@@ -100,12 +102,16 @@ class FortiAnalyzer(object):
 
             # HTTP 200 OK
             if sys_status.status_code == 200:
-
-                # If the FortiAnalyzer request is unsuccessful, then we log in again.
+              
+                # If the FortiAnalyzer request is unsuccessful, log in again.
                 if sys_status.json()['result'][0]['status']['code'] != 0:
                     self.login()
-
-        # Otherwise, log in again.
+                  
+            # Log in again.
+            else:
+              self.login()
+                  
+        # Log in again.
         else:
             self.login()
 
