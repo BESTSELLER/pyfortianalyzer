@@ -7,5 +7,5 @@ metadata:
     github.com/project-slug: BESTSELLER/pyfortianalyzer
 spec:
   type: service
-  lifecycle: experimental
+  lifecycle: production
   owner: network
