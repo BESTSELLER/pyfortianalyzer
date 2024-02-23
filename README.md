@@ -3,19 +3,12 @@ Python API client library for Fortinet's [FortiAnalyzer](https://www.fortinet.co
 
 It does not provide all endpoints or functionality available. We encourage to make a pull request with needed missing endpoints.
 
-> **Note:** This library has been built and tested for FortiAnalyzer v7.0.x.
+> **Note:** This library has been built and tested for FortiAnalyzer v7.2.x.
 
 ## Installation
 To install run `pip install pyfortianalyzer`.
 
 Alternatively, you can clone the repo and run `python setup.py install`.
-
-## Login handling
-As the FortiAnalyzer API does not provide an expiration date/time when logging in, we've made some workarounds to handle login sessions without hitting the maximum login session limit in FortiAnalyzer.
-We do this by checking if our session is still valid by hitting an API endpoint, and if not we log out with our old token and log in again to retrieve a new token before executing the actual requested API endpoint.
-Additionally, we also use the standard Python module `atexit` to gracefully log out during a Python script executing.
-
-It's therefore not needed to login and logout in your code, as this library handles that for you.
 
 ## Quick Start
 To begin, import pyfortianalyzer and instantiate the API.
@@ -28,8 +21,7 @@ Optionally, its possible to set `adom` which defaults to `root` and `verify` whi
 import pyfortianalyzer
 fortianalyzer = pyfortianalyzer.api(
     host = "https://fortianalyzer.example.com",
-    username = "apiuser",
-    password = "secret",
+    token = "<api_token_from_faz>"
 )
 ```
 
@@ -69,6 +61,26 @@ else:
     "code": -3,
     "message": "Object does not exist"
 }
+```
+
+
+### Custom API request.
+Since FortiAnalyzer consists of a ton of API endpoints, not all are supported natively in this module.
+
+You can however use the custom_request function in order to reach any API endpoint in FortiAnalyzer.
+
+**Code**
+```
+faz_custom_request = FortiAnalyzer.system.custom_request(
+    params={
+        "url": "/dvmdb/adom/root/device",
+        "option": [
+            "get meta"
+        ]
+    },
+    method="get"
+)
+print(json.dumps(faz_custom_request, indent=4))
 ```
 
 ### Adding a FortiGate

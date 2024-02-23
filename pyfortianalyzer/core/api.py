@@ -7,10 +7,9 @@ class Api(object):
     """Base API class.
     """
 
-    def __init__(self, host: str, username: str, password: str, adom: str="root", verify: bool=True, **kwargs):
+    def __init__(self, host: str, token: str, adom: str="root", verify: bool=True, **kwargs):
         self.host = host
-        self.username = username
-        self.password = password
+        self.token = token
         self.adom = adom
         self.verify = verify
         self.session = None

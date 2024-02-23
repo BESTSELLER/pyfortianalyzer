@@ -8,6 +8,21 @@ class System(FortiAnalyzer):
     def __init__(self, **kwargs):
         super(System, self).__init__(**kwargs)
 
+    def custom_request(self, params: dict = None, method: str = "get"):
+        """Send a custom request to the FortiManager API.
+
+        Args:
+            params (dict): Payload parameters to send with the request.
+            method (str): get, exec, add, set, update, delete. Default is get.
+
+        Returns:
+            dict: JSON data.
+        """
+
+        params = params
+
+        return self.post(method=method, params=params)
+
     def ha(self):
         """Obtain FortiAnalyzer HA information and status of the system.
 
