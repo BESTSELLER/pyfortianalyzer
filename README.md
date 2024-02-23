@@ -71,7 +71,7 @@ You can however use the custom_request function in order to reach any API endpoi
 
 **Code**
 ```
-faz_custom_request = FortiAnalyzer.system.custom_request(
+faz_custom_request = fortianalyzer.system.custom_request(
     params={
         "url": "/dvmdb/adom/root/device",
         "option": [
